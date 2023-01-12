@@ -4,12 +4,12 @@
 
 help
 ```bash
-go run main.go -h
+go run *.go -h
 ```
 
 example
 ```bash
-go run main.go -v -m jan -d 1
+go run *.go -v -m jan -d 1
 ```
 
 output

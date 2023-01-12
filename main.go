@@ -1,10 +1,17 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"strings"
 	"time"
+)
+
+var (
+	errCrossBottom   = errors.New("corss bottom error")
+	errCrossRight    = errors.New("corss right error")
+	errAlreadyFilled = errors.New("already filled error")
 )
 
 /*
@@ -211,31 +218,35 @@ func (f field) check(cs ...coord) bool {
 func (f field) put(p piece) (field, bool) {
 	for y, row := range f {
 		for x := range row {
-			nf, ok := f.putTo(p, coord{x, y})
-			if ok {
+			nf, err := f.putTo(p, coord{x, y})
+			if err == nil {
 				return nf, true
+			} else if err == errCrossRight {
+				break
+			} else if err == errCrossBottom {
+				return f, false
 			}
 		}
 	}
 	return f, false
 }
 
-func (f field) putTo(p piece, s coord) (field, bool) {
+func (f field) putTo(p piece, s coord) (field, error) {
 	nf := f.copy()
 	for _, v := range p.cells {
 		x, y := s.x+v.x, s.y+v.y
 		if len(nf) <= y {
-			return f, false
+			return f, errCrossBottom
 		}
 		if len(nf[y]) <= x {
-			return f, false
+			return f, errCrossRight
 		}
 		if nf[y][x] != "_" {
-			return f, false
+			return f, errAlreadyFilled
 		}
 		nf[y][x] = p.sym
 	}
-	return nf, true
+	return nf, nil
 }
 
 type coord struct {
